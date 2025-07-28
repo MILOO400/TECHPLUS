@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TECHPLUS</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #004080;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 2rem;
+    }
+    header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 2rem;
+    }
+    .product-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .product {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 1rem;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(30px);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    .product:hover {
+        transform: translateY(0) scale(1.05);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+    .product img {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+    }
+    .product h3 {
+        margin: 0.5rem 0;
+    }
+    .product p {
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .price {
+        font-size: 1.2rem;
+        color: green;
+        font-weight: bold;
+    }
+
+    /* Modal styles */
+    #modal {
+        position: fixed;
+        top: 0; left: 0; right:0; bottom:0;
+        background-color: rgba(0,0,0,0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+    #modal.active {
+        display: flex;
+    }
+    #modal-content {
+        background: white;
+        border-radius: 10px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 1rem 1.5rem 2rem;
+        position: relative;
+        text-align: center;
+    }
+    #modal-content img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 1rem;
+    }
+    #modal-content h3 {
+        margin: 0.5rem 0;
+    }
+    #modal-content p {
+        color: #444;
+        font-size: 1rem;
+    }
+    #modal-content .price {
+        font-size: 1.4rem;
+        color: green;
+        font-weight: bold;
+        margin-top: 0.5rem;
+    }
+    #modal-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #666;
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.2s ease;
+    }
+    #modal-close:hover {
+        color: #000;
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>TECHPLUS</h1>
+</header>
+
+<div class="container" id="productContainer">
+    <!-- Productos se insertan aquí dinámicamente -->
+</div>
+
+<!-- Modal -->
+<div id="modal">
+    <div id="modal-content">
+        <span id="modal-close">&times;</span>
+        <img src="" alt="" id="modal-img" />
+        <h3 id="modal-title"></h3>
+        <p id="modal-desc"></p>
+        <div class="price" id="modal-price"></div>
+    </div>
+</div>
+
+<!-- GSAP CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+    const productos = [
+        {
+            nombre: "Laptop HP Pavilion 15",
+            descripcion: "Procesador Intel Core i5, 8GB RAM, 512GB SSD",
+            precio: "Q 5,735.00",
+            imagen: "https://www.radioshackla.com/media/catalog/product/4/5/457661900017_1.jpg?optimize=medium&bg-color=255,255,255&fit=bounds&height=700&width=700&canvas=700:700"
+        },
+        {
+            nombre: "Monitor Samsung 24\"",
+            descripcion: "Full HD, pantalla LED, HDMI/VGA",
+            precio: "Q 1380.00",
+            imagen: "https://elektragt.vtexassets.com/arquivos/ids/198439-800-auto?v=638700462612770000&width=800&height=auto&aspect=true"
+        },
+        {
+            nombre: "Teclado Mecánico RGB",
+            descripcion: "Switch Blue, retroiluminación multicolor",
+            precio: "Q 350.00",
+            imagen: "https://m.media-amazon.com/images/I/71KBeJ1nz6L._AC_SL1500_.jpg"
+        },
+        {
+            nombre: "Mouse Logitech G203",
+            descripcion: "Sensor óptico de 8000 DPI, RGB personalizable",
+            precio: "Q 235.00",
+            imagen: "https://click.gt/cdn/shop/files/product-slide-xl-01-large_663f051c-9213-4598-b454-e7090112b337.jpg?v=1724206843&width=1200"
+        },
+        {
+            nombre: "Auriculares Gamer HyperX Cloud",
+            descripcion: "Sonido envolvente, micrófono desmontable",
+            precio: "Q 650.00 ",
+            imagen: "https://m.media-amazon.com/images/I/41zL3nQghhL._AC_._SX600_.jpg"
+        },
+        {
+            nombre: "Disco Duro Externo 1TB",
+            descripcion: "USB 3.0, portátil, compatible con PC/Mac",
+            precio: "Q 460",
+            imagen: "https://proinfoaccesorios.com/wp-content/uploads/2024/06/Disco-Duro-Externo-2TB-Seagate-Portable-Drive-2.5_-USB-3-_3_.jpg"
+        },
+        {
+            nombre: "Tablet Samsung Galaxy Tab A8",
+            descripcion: "Pantalla 10.5”, 64GB de almacenamiento",
+            precio: "Q 1,299.00",
+            imagen: "https://www.almacenestropigas.com.gt/media/catalog/product/4/6/460169200015_1_zizxr7ksexkltwki.jpg?optimize=medium&bg-color=255,255,255&fit=bounds&height=1000&width=1000&canvas=1000:1000"
+        },
+        {
+            nombre: "Impresora HP DeskJet 2720e",
+            descripcion: "Multifuncional, Wi-Fi, impresión móvil",
+            precio: "Q 590.00",
+            imagen: "https://www.a4toner.com/analisis-impresoras/wp-content/uploads/2021/04/impresora-inyeccion-HP-DeskJet-2720.jpg"
+        },
+        {
+            nombre: "Webcam Logitech C920 HD",
+            descripcion: "Videollamadas en Full HD 1080p, micrófono dual",
+            precio: "Q 599.00",
+            imagen: "https://resource.logitech.com/content/dam/logitech/en/products/webcams/c920/gallery/c920-gallery-1.png"
+        },
+        {
+            nombre: "Memoria USB 64GB SanDisk",
+            descripcion: "Alta velocidad USB 3.1, diseño compacto",
+            precio: "Q 85.00",
+            imagen: "https://cdn.kemik.gt/2022/09/SDCZ410-064G-G46-SANDISK-1200X1200-1-1.jpg"
+        },
+        {
+            nombre: "Silla Gamer Reclinable",
+            descripcion: "Ergonómica, con soporte lumbar y reposabrazos ajustables",
+            precio: "Q 1,200.00",
+            imagen: "https://brocs.gt/wp-content/uploads/1-BRAL.jpg"
+        },
+        {
+            nombre: "Smartwatch Xiaomi Redmi Watch 3",
+            descripcion: "Pantalla AMOLED, GPS integrado, resistente al agua",
+            precio: "Q 525.00",
+            imagen: "https://xiaomistore.com.gt/wp-content/uploads/Redmi-Watch-3-7422.webp"
+        },
+        {
+            nombre: "Router TP-Link Archer C6",
+            descripcion: "Doble banda, velocidad de hasta 1200Mbps",
+            precio: "Q 299.00",
+            imagen: "https://cdn.kemik.gt/2025/02/ARCHERC6-TPLINK-1200x1200-01.jpg"
+        },
+        {
+            nombre: "Cargador Portátil Power Bank 20000mAh",
+            descripcion: "Doble salida USB, carga rápida",
+            precio: "Q 189.00",
+            imagen: "https://www.steren.com.gt/media/catalog/product/cache/0236bbabe616ddcff749ccbc14f38bf2/image/21920e5b9/power-bank-de-20-000-mah-con-turbo-charge-qc-y-power-delivery-con-2-salidas-usb-y-usb-c.jpg"
+        }
+    ];
+
+    const contenedor = document.getElementById("productContainer");
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modal-img");
+    const modalTitle = document.getElementById("modal-title");
+    const modalDesc = document.getElementById("modal-desc");
+    const modalPrice = document.getElementById("modal-price");
+    const modalClose = document.getElementById("modal-close");
+
+    // Insertar productos en DOM como links clickeables
+    productos.forEach(p => {
+        const a = document.createElement("a");
+        a.href = "#";
+        a.className = "product-link";
+
+        const div = document.createElement("div");
+        div.className = "product";
+
+        div.innerHTML = `
+            <img src="${p.imagen}" alt="${p.nombre}">
+            <h3>${p.nombre}</h3>
+            <p>${p.descripcion}</p>
+            <div class="price">${p.precio}</div>
+        `;
+
+        a.appendChild(div);
+        contenedor.appendChild(a);
+
+        // Click para abrir modal con info del producto
+        a.addEventListener("click", e => {
+            e.preventDefault();
+            modalImg.src = p.imagen;
+            modalImg.alt = p.nombre;
+            modalTitle.textContent = p.nombre;
+            modalDesc.textContent = p.descripcion;
+            modalPrice.textContent = p.precio;
+            modal.classList.add("active");
+            // Animar el modal al abrir
+            gsap.fromTo("#modal-content", {scale: 0.8, opacity: 0}, {scale: 1, opacity: 1, duration: 0.3, ease: "power2.out"});
+        });
+    });
+
+    // Animación de entrada de productos
+    gsap.to(".product", {
+        opacity: 1,
+        y: 0,
+        stagger: 0.15,
+        duration: 0.6,
+        ease: "power2.out"
+    });
+
+    // Cerrar modal
+    modalClose.addEventListener("click", () => {
+        gsap.to("#modal-content", {
+            scale: 0.8,
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.in",
+            onComplete: () => modal.classList.remove("active")
+        });
+    });
+
+    // Cerrar modal clickeando fuera del contenido
+    modal.addEventListener("click", e => {
+        if (e.target === modal) {
+            gsap.to("#modal-content", {
+                scale: 0.8,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in",
+                onComplete: () => modal.classList.remove("active")
+            });
+        }
+    });
+</script>
+</body>
+</html>
